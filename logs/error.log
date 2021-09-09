@@ -1,0 +1,4 @@
+  File "/root/yobot/src/client/yobotg.sh", line 2
+    echo $$ > yobotg.pid
+         ^
+SyntaxError: invalid syntax
