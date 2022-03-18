@@ -765,14 +765,18 @@ var vm = new Vue({
         initTotalDamage: function() {
             this.totalDamage = [];
             let bossDamageList = {};
-            let result = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0, countTail: 0};
+            let result = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0,helpknife: 0,behelpknife: 0, countTail: 0};
             for (let challenge of this.challenges) {
                 let dict = bossDamageList[challenge.boss_num];
                 if (dict == undefined) {
-                    dict = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0, countTail: 0}
+                    dict = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0,helpknife: 0,behelpknife: 0, countTail: 0}
                     bossDamageList[challenge.boss_num] = dict;
                 }
                 let damage = challenge.damage;
+                if(challenge.behalf !=null){
+                    result.behelpknife++;
+                    dict.behelpknife++;
+                }
                 if (challenge.health_ramain == 0) {
                     result.tailDamage.push(damage);
                     result.countTail++;
@@ -801,15 +805,21 @@ var vm = new Vue({
                 const playerQQid = elem.qqid;
                 let challenges = this.challengeMap[playerQQid];
                 let bossDamageList = {};
-                let result = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0, countTail: 0};
+                let result = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0,helpknife: 0,behelpknife: 0, countTail: 0};
                 for (let day in challenges) {
                     for (let challenge of challenges[day]) {
                         let dict = bossDamageList[challenge.boss_num];
                         if (dict == undefined) {
-                            dict = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0, countTail: 0}
+                            dict = {normalDamage: [], continueDamage: [], tailDamage: [], count: 0, countContinue: 0,helpknife: 0,behelpknife: 0, countTail: 0}
                             bossDamageList[challenge.boss_num] = dict;
                         }
                         let damage = challenge.damage;
+                        
+                        if(challenge.behalf !=null){
+                            result.behelpknife++;
+                            dict.behelpknife++;
+                        }
+                        
                         if (challenge.health_ramain == 0) {
                             result.tailDamage.push(damage);
                             result.countTail++;
@@ -848,6 +858,8 @@ var vm = new Vue({
                     nickname: member.nickname,
                     count: pdmg.count + pdmg.countContinue / 2 + pdmg.countTail / 2,
                     countContinue: pdmg.countContinue,
+                    behelpknife: pdmg.behelpknife,
+                    helpknife: pdmg.helpknife,
                     countTail: pdmg.countTail,
                     avgDmg: isNaN(tempAvgDmg) ? 0 : tempAvgDmg,
                     sumDmg: playerSum,

